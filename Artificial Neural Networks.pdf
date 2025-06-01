@@ -1,0 +1,150 @@
+	\documentclass{article}
+	\usepackage{graphicx} % Required for inserting images
+	\usepackage{amsmath}
+	
+	\title{Artificial Neural Networks}
+	\author{Siddharth Anil}
+	\date{May 2025}
+	
+	\begin{document}
+		
+		\maketitle
+		
+		\section{My Approach}
+		First of all, I would like to thank my seniors for giving me this opportunity to gain valuable insights into the world of AI with this assignment module "Artificial Neural Networks" and guiding me throughout in understanding how neural networks are capable of learning complex patterns and representations from data, making them powerful tools for solving non-linear and high-dimensional problems. 
+		
+		In the beginning of my journey into solving this problem i watched many videos sourced from youtube to understand neural networks and the math behind deep learning. The underlying concepts like forward propagation, back propagation were confusing at first but when i implemented it into my project, everything seemed to be falling in place.
+		
+		What i did first was, like any other would have done was inspect the dataset and get insights on which all features to keep and which all to drop. I opened a kaggle notebook and imported the dataset to it for analysis.
+		I saw that most entries in the NoShow column were 0s so the model could just be assuming it as a trend and not learn very well and that was exactly what happened with numpy model. All the predicted A2 probabilities were really small and near to zero.
+		\section{Cleaning data}
+		II imported the necessary libraries and began my work on the kaggle notebook. The columns Patient ID and Appointment ID seemed to be useless to predict whether the patient showed up at the appointment so i removed those columns and to avoid noise in the dataset.
+		
+		 I checked which all datatypes were present in the columns and found that some of them were of the object type and needed encoding. Gender seemed to be an important feature to predict since females are generally more health conscious than males.
+		 
+		  Since the basis of creating a neural network to predict something is mathematics, everything needed to be converted to numbers and also gender and no shows columns have just two categories to classify, in such cases ordinal encoding is the best approach. So i used ordinal encoder from scikitlearn library. I refered to the documentation to get an idea on how to type the code. Then again i used the same strategy on Noshow column which had boolean entries.
+		  
+		   I checked on the data again and found out that the scheduled day and appointment day were two columns with date time entries but those weren't kept in the dataframe as date time format and those columns felt useless, until i thought of like if the days in between the booking and appointment were long enough then people might forget about their appointments and combined the two features into one as days in between as a seperate column. As in the tutorials i watched i saw that the end column is always the target to be predicted so that while train test splitting it would be easier to differentiate the input and output but the 'days in between column' that i newly created went to the end by default. I changed its index using insert and pop command to insert and remove columns which i found on a page about pandas in GeeksforGeeks.
+		    
+		Now the only categorical data left out was the 'Neighbourhood column'. I checked the number of categories in the column by using valuecounts function which gave me the answer 81. Since it was a large number of categories and i strongly believed that the distance of the neighbourhood from the medical center would definitely be a factor affecting 'No shows', I couldnt just leave it out.
+		It had to be encoded. The confusion was to implement which encoding -  OneHotEncoding or LabelEncoding. The number of categories was too large to be using  OneHotEncoding. So i went along with LabelEncoding.
+		
+		Now every column was numerical but the age column seemed too large so i thought of scaling it down otherwise the learning might get uneven. 'Age' column might dominate the other features or maybe the gradients may explode or vanish.
+		I used MinMax scaler to scale it down between 0 to 1 so that it was similiar to the other features.Later on when i concluded with the model, I realised it was a big mistake and corrected the scaling function as Standard Scaler
+		
+		Then i checked for any missing values and in the dataframe with more than one lakh entries, there were no missing values.
+		
+		Then i converted the pandas dataframe into a numpy array since numpy deals with most of the mathematical part of python and it needed to be used as given in the task. Alongside the conversion i shuffled the data to prevent the model from catching any unwanted similarities.
+		Then i splitted the data to data to test the developed model and data to be trained. The number of entries in the training set is something i experimented with in order to get the best results in testing set.
+		
+		\section{Numpy Model}
+		The neural network i had in mind was one with 64 nodes in the hidden layer with activation function ReLU and the activation function for the output layer that i decided was sigmoid. There were 10 features at the end of cleaning the data.Since in all the tutorials for binary classification that i saw, the sigmoid was a must condition to convert the end product to a probability. 
+		
+		[Start]
+		
+		|
+		
+		[Input Layer]
+		
+		(10 Input Features: x1, x2, ..., x10)
+		
+		|
+		
+		[Hidden Layer]
+		
+		(64 Neurons, Activation: ReLU )
+		
+		|
+		
+		[Output Layer]
+		
+		(2 Neurons, Activation: Sigmoid)
+		
+		|
+		
+		[Output]
+		
+		(Class probabilities or predictions)
+		
+		
+		
+		I first made a crude model with all the concepts that i learned but i encountered many problems. The skewed dataset made the model think that predicting all as zero is the best option possible. I used multiple methods to not let the majority class to out rule the patterns of the minority class in No shows.I increased the number of hidden layers but all it did was increase the complexity. I increased the data available for training and i changed loss functions from Binary Cross Entropy Loss to Binary Focal loss. Then i changed the learning rate. I experimented around with everything i could but nothing seemed to work. After receiving guidance from the material provided by seniors and from seniors, I realized one way of doing it was using balanced classes. It required assigning weights to the classes and by assigning a higher weight to the one that was a minority. 
+		
+		The ReLU function which is a basic function for numerical
+		 prediction and activation in hidden layers for binary classification could be explained as 
+	\[
+	\text{ReLU}(x) = 
+	\begin{cases}
+		x & \text{if } x > 0 \\
+		0 & \text{if } x \leq 0
+	\end{cases}
+	\]
+	 While updating parameters of weights and biases the requirement of derivative is inevitable to calculate the new update value for better accuracy. So i defined the ReLU derivative as a function. These were steps that were similar to the steps shown in Tutorials for creating Neural Networks and so it was easy to define these functions.
+	 \[
+	 \frac{d}{dx} \text{ReLU}(x) = 
+	 \begin{cases}
+	 	1 & \text{if } x > 0 \\
+	 	0 & \text{if } x \leq 0 \\
+	 \end{cases}
+	 \]
+	 After defining the sigmoid function 
+	 \[
+	 \sigma(x) = \frac{1}{1 + e^{-x}}
+	 \]
+	 I used help from chatgpt to fetch me the code for binary cross entropy loss function as i had to make the calculative part in numpy and i didnt know the loss function too well. Then when i had to add weights to the function, i researched a bit on the function and found out more on the intuition behind the large formula.
+	 \[
+	 \L_{\text{BCE}} = - \left[ y \log(\hat{y}) + (1 - y) \log(1 - \hat{y}) \right]
+	 \]
+	 
+	 I found out that the sum in the function has attributes of y=1  and y = 0 on either side of the + sign. This helped me in initializing weights to each side and i assigned the weight of 1 as 4 times to that of 0. Earlier i had checked the ratio of  number of outcomes that were 1 to that of 0 and it turned out to be almost $3.958 \approx 4 $
+	 \\
+	 \\
+	 Now it was time to initialize weights and biases initially using the randn function. Weights were initialized from the Gaussian Distribution. All the biases were initialized to zeros as it is the common practice.
+	 \\
+	 \\
+	 Forward propagation was coded as per the plan : 64 nodes in hidden layer and ReLU for activating them. Before passing to the output layer of 2, sigmoid function was applied to convert them to probabilities between 0 to 1. 
+	 \\
+	 \\
+	 Backward propagation was the most confusing of all. While coding i was receiving errors after errors. It took a while to correct everything. Even initializing m(the number of input features) gave me an error. I accidentally typed in X.shape(1) as i saw in almost all tutorials on the matter and the error was fixed after a lot of hours and coffee.
+	 In the back propagation step,the gradients of the loss with respect to the parameters W1,b1,W2,b2 are calculated to update them during training.
+	 \\
+	 \\
+	 Then for updating the new weights and biases after back propagation step, i defined a function update parameters.
+	 \\
+	 \\
+	 After defining these functions, things seemed to be getting easy. I defined functions to calculate accuracy and predict based on the probability during the training.I created the function for gradient descent which was the crucial step before training the model. There you can see i asked python to print the A2 values too in the gradient descent because after 1st training and outcome analysis, i realized i made a slow learner who was lazy and predicted all zeros without doing the hard work of predicting the patterns in data and so i had to check. The A2 values came out to be too small after the iterations as i checked it went nearly $10^{-177}$. I realized my model was broken and since deadline was approaching, i tried to use some adjusting factors but nothing worked. This was the time when i reached out to almost everyone for guidance and cleared the problem by fixing weights, incrementing training data size and changing the base plan: the base plan was a simple model with 10-15 nodes in the hidden layer. I checked the probabilities and matched with the zeroes and ones to find the ideal value for predicting the outcome which was 0.3. Almost all of the ones seemed to be coming with probabilities greater than 0.3 and so i applied it in predicting outcomes for the test data
+	 \\
+	 \\
+	 Then i tested the model on my data kept separate for testing and received an accuracy of 74.2 percent.(Earlier in the model with mistakes i got accuracies 79 and then 81 when i changed minmax scaling to standard scaler).The model with mistakes had an F1 score of 0 and pr auc of 0.28. The confusion matrix was the criteria that made me realise the mistakes in the model and correct them. There were 0 True Positives and True negatives. After the tuning and changes, i received a model which predicts the No shows with an accuracy upto 74 percent and an f1 score of 0.75. The pr auc of my model is still low 0.36 but as per chatgpt, the baseline for models with data imbalance is the ratio of the majority to minority which in this case is 0.2.
+	 \\
+	 \\
+	 \section{Pytorch Model}
+	 In creating the Pytorch model, i didn't need to refer to the mathematical formula to type the code. Everything was available in the library and i just had to look into the documentation to type everything right. It took me lower time in creating it as there were fewer errors in code and it was running fast as well. I defined the model first with the torch.nn library and then created tensors X and Y for the training data. The loss function was also available in the torch.nn library and i initialized weights beforehand to avoid failure as in numpy model. The ratio 0.2 is the minority/majority ratio in the imbalanced set. In the optimizer part, i had two options - Adam and SDG(Stochastic Gradient Descent).I tried both but SDG worked better for the model. Basically the entire gradient descent function and other supportive functions i created in numpy were done in two lines of code on pytorch.
+	 
+	 I normalized the input data before running it in the model as per the common practice using
+	 
+	 \\
+	 X = (X-X.mean())/X.std()
+	 \\
+
+	 The next step was to initialize the number of epochs and run the model on the training data. The number of epochs i set first was 1000 then 2000 and finally 4000 to increase the pr auc and f1 scores.The training cell took a time to run but it showed great results. At least this model was predicting the outcome rather than randomly guessing.
+	 I received a model with 74 percent accuracy, an f1 score of 0.75 and a pr auc of 0.36 again. The confusion matrix showed me that it was still unable to learn trends in the outcome 1 but definitely it was learning patterns from the data
+	 \\
+	 \\
+	 \section{Inference}
+	  The losses curve of the pytorch model shows that the model is learning trends from the data, However it was misguiding a bit because as per the pr auc and confusion matrix, it still wasn't learning greatly however it was performing as better as it could because of the tweaks made. The pr auc, confusion matrix and f1 score definitely says the model is learning but it is slow since there are not much attributes that could clearly predict whether the patient would show up or not. The confusion matrix says to us that the model isn't picking up trends from the true class which is patient showing up. Overall i think more data is necessary to predict whether a patient shows up or not. Or to my ignorance some features could have been engineered to bring more co-relation and hence enhance the model.
+	 
+	  
+	 
+	 
+	
+ 
+  
+  
+		
+		
+		
+		
+		
+	\end{document}
+	
